@@ -19,11 +19,44 @@ const LandingPage = ({ setGlobalName }) => {
 
     return (
         <motion.div
-            className="flex flex-col items-center justify-center min-h-screen px-4 py-20 text-center"
+            className="flex flex-col items-center justify-center min-h-screen px-4 py-20 text-center relative overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
+            {/* Page-specific Floating Elements */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(5)].map((_, i) => (
+                    <motion.div
+                        key={i}
+                        className="absolute w-64 h-64 border border-primary/10 rounded-full"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                        }}
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.05, 0.1, 0.05],
+                            rotate: [0, 90, 0]
+                        }}
+                        transition={{
+                            duration: 10 + i * 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    >
+                        <div className="absolute top-0 left-1/2 w-2 h-2 bg-primary/40 rounded-full -translate-x-1/2" />
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Cinematic Scanner Line */}
+            <motion.div
+                className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent z-0 pointer-events-none"
+                animate={{ top: ['0%', '100%'] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            />
+
             <motion.div
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
