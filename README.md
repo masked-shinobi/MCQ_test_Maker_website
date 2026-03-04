@@ -116,4 +116,3 @@ To upload a new quiz, ensure your CSV follows this header format:
 Information Retrieval Techniques Project
 
 ---
-*Built with ❤️ using Antigravity AI*
