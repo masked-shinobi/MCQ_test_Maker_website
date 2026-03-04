@@ -102,7 +102,18 @@ const AppContent = () => {
           questionCount: 'Cloud'
         }));
 
-        setQuizzes([...formattedCloud, ...localQuizzes]);
+        const allQuizzes = [...formattedCloud, ...localQuizzes];
+        const uniqueQuizzes = Array.from(
+          allQuizzes.reduce((map, quiz) => {
+            // Prefer cloud version if both exist, use filename as unique key
+            if (!map.has(quiz.filename) || quiz.source === 'cloud') {
+              map.set(quiz.filename, quiz);
+            }
+            return map;
+          }, new Map()).values()
+        );
+
+        setQuizzes(uniqueQuizzes);
       } catch (error) {
         console.error("Error fetching quizzes:", error);
       }

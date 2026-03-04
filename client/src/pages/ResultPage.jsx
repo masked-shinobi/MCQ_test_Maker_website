@@ -161,7 +161,7 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) =
                         <span>RE-INITIALIZE</span>
                     </button>
 
-                    <div className={`flex items - center gap - 2 px - 5 py - 3 rounded - xl text - base font - black border transition - all duration - 700 ${syncStatus === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+                    <div className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-black border transition-all duration-700 ${syncStatus === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
                         syncStatus === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-500' :
                             'bg-white/[0.03] border-white/5 text-slate-500'
                         }`}>
@@ -193,13 +193,13 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) =
                     return (
                         <div
                             key={idx}
-                            className={`p - 6 md: p - 8 rounded - [2.5rem] border transition - all duration - 500 glass - card group relative overflow - hidden ${isCorrect ? 'hover:border-green-500/30 border-white/5' : 'hover:border-red-500/30 border-white/5'
+                            className={`p-6 md:p-8 rounded-[2.5rem] border transition-all duration-500 glass-card group relative overflow-hidden ${isCorrect ? 'hover:border-green-500/30 border-white/5' : 'hover:border-red-500/30 border-white/5'
                                 } `}
                         >
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <span className={`px - 3 py - 0.5 rounded - full text - [9px] font - black tracking - widest uppercase ${isCorrect ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} `}>
+                                        <span className={`px-3 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase ${isCorrect ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} `}>
                                             Question_{idx + 1}
                                         </span>
                                         <div className="flex items-center gap-2 text-slate-600 font-mono text-[9px]">
@@ -210,13 +210,13 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) =
                                     <h3 className="text-xl md:text-2xl font-bold leading-tight mb-6 tracking-tight text-white/90">{q.question}</h3>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className={`p - 5 rounded - 2xl border transition - all ${isCorrect ? 'bg-green-500/5 border-green-500/20 shadow-[0_10px_30px_rgba(34,197,94,0.05)]' : 'bg-red-500/5 border-red-500/20 shadow-[0_10px_30px_rgba(239,68,68,0.05)]'} `}>
+                                        <div className={`p-5 rounded-2xl border transition-all ${isCorrect ? 'bg-green-500/5 border-green-500/20 shadow-[0_10px_30px_rgba(34,197,94,0.05)]' : 'bg-red-500/5 border-red-500/20 shadow-[0_10px_30px_rgba(239,68,68,0.05)]'} `}>
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-2">Selection_Manifest</span>
                                             <div className="flex items-center gap-3">
-                                                <div className={`w - 6 h - 6 rounded flex items - center justify - center text - [10px] font - black ${isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} `}>
+                                                <div className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-black ${isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} `}>
                                                     {userAnswers[idx] || '?'}
                                                 </div>
-                                                <span className={`text - base font - bold ${isCorrect ? 'text-green-400' : 'text-red-400'} `}>
+                                                <span className={`text-base font-bold ${isCorrect ? 'text-green-400' : 'text-red-400'} `}>
                                                     {userText}
                                                 </span>
                                             </div>
@@ -234,14 +234,14 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) =
                                         </div>
                                     </div>
                                 </div>
-                                <div className={`flex items - center justify - center w - 16 h - 16 rounded - 2xl flex - shrink - 0 transition - all duration - 700 ${isCorrect ? 'bg-green-500/10 text-green-500 group-hover:scale-110 group-hover:bg-green-500/20 shadow-[0_20px_40px_rgba(34,197,94,0.1)]' : 'bg-red-500/10 text-red-500 group-hover:scale-110 group-hover:bg-red-500/20 shadow-[0_20px_40px_rgba(239,68,68,0.1)]'
+                                <div className={`flex items-center justify-center w-16 h-16 rounded-2xl flex-shrink-0 transition-all duration-700 ${isCorrect ? 'bg-green-500/10 text-green-500 group-hover:scale-110 group-hover:bg-green-500/20 shadow-[0_20px_40px_rgba(34,197,94,0.1)]' : 'bg-red-500/10 text-red-500 group-hover:scale-110 group-hover:bg-red-500/20 shadow-[0_20px_40px_rgba(239,68,68,0.1)]'
                                     } `}>
                                     {isCorrect ? <Check className="w-8 h-8 stroke-[3]" /> : <X className="w-8 h-8 stroke-[3]" />}
                                 </div>
                             </div>
 
                             {/* Visual decorative line */}
-                            <div className={`absolute bottom - 0 left - 0 h - 1 transition - all duration - 700 ${isCorrect ? 'bg-green-500/40 w-0 group-hover:w-full' : 'bg-red-500/40 w-0 group-hover:w-full'} `} />
+                            <div className={`absolute bottom-0 left-0 h-1 transition-all duration-700 ${isCorrect ? 'bg-green-500/40 w-0 group-hover:w-full' : 'bg-red-500/40 w-0 group-hover:w-full'} `} />
                         </div>
                     );
                 })}
