@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { LayoutDashboard, ArrowLeft, User, Calendar, Award, AlertTriangle, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, ArrowLeft, User, Calendar, Award, AlertTriangle, RefreshCw, Database } from 'lucide-react';
 
 const DashboardPage = () => {
     const [results, setResults] = useState([]);
@@ -47,13 +47,22 @@ const DashboardPage = () => {
                         <p className="text-slate-500 font-medium mt-1">Global performance tracking and session analytics.</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => navigate('/')}
-                    className="flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 font-bold"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Return Core</span>
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => navigate('/manage')}
+                        className="flex items-center gap-3 px-8 py-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-2xl transition-all border border-purple-500/20 font-bold group"
+                    >
+                        <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <span>Manage Modules</span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 font-bold"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span>Return Core</span>
+                    </button>
+                </div>
             </div>
 
             {isLoading ? (

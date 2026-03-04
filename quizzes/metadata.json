@@ -1,0 +1,12 @@
+[
+    {
+        "id": "ir_mcq.csv",
+        "name": "Information Retrieval MCQ",
+        "filename": "ir_mcq.csv"
+    },
+    {
+        "id": "general_mcq.csv",
+        "name": "General Knowledge MCQ",
+        "filename": "general_mcq.csv"
+    }
+]

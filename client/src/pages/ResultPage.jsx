@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { RefreshCcw, Check, X, Save, AlertCircle, Info } from 'lucide-react';
 import axios from 'axios';
 
-const ResultPage = ({ questions, userAnswers, userName, onRestart }) => {
+const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) => {
     const [score, setScore] = useState(0);
     const [animatedScore, setAnimatedScore] = useState(0);
     const [syncStatus, setSyncStatus] = useState('idle'); // idle, loading, success, error
@@ -108,9 +108,14 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart }) => {
                     Engine <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary neon-text-glow">Summary</span>
                 </h1>
 
-                <p className="text-slate-400 mb-12 text-xl font-light">
+                <p className="text-slate-400 mb-4 text-xl font-light">
                     Candidate Identity: <span className="text-white font-bold tracking-tight">{userName || 'GUEST_ID_UNKNOWN'}</span>
                 </p>
+                <div className="flex justify-center mb-12">
+                    <span className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs font-black tracking-widest uppercase">
+                        Module: {quizName || 'GENERAL_DATASET'}
+                    </span>
+                </div>
 
                 <div className="flex justify-center flex-wrap gap-10 md:gap-24 mb-14">
                     <div className="flex flex-col items-center">
@@ -137,8 +142,8 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart }) => {
                     </button>
 
                     <div className={`flex items-center gap-4 px-10 py-6 rounded-3xl text-xl font-black border transition-all duration-700 ${syncStatus === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
-                            syncStatus === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-500' :
-                                'bg-white/[0.03] border-white/5 text-slate-500'
+                        syncStatus === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-500' :
+                            'bg-white/[0.03] border-white/5 text-slate-500'
                         }`}>
                         {syncStatus === 'loading' && <div className="w-6 h-6 border-4 border-slate-500 border-t-transparent rounded-full animate-spin" />}
                         {syncStatus === 'success' && <Check className="w-6 h-6" />}

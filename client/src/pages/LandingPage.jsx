@@ -3,17 +3,32 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, BookOpen, LayoutDashboard, User } from 'lucide-react';
 
-const LandingPage = ({ setGlobalName }) => {
+const LandingPage = ({ setGlobalName, quizzes, onSelectQuiz }) => {
     const [name, setName] = useState('');
-    const [error, setError] = useState(false);
+    const [selectedQuizId, setSelectedQuizId] = useState('');
+    const [error, setError] = useState({ name: false, quiz: false });
     const navigate = useNavigate();
 
-    const handleStart = () => {
+    const handleStart = async () => {
+        let hasError = false;
+        const newError = { name: false, quiz: false };
+
         if (!name.trim()) {
-            setError(true);
+            newError.name = true;
+            hasError = true;
+        }
+        if (!selectedQuizId) {
+            newError.quiz = true;
+            hasError = true;
+        }
+
+        if (hasError) {
+            setError(newError);
             return;
         }
+
         setGlobalName(name);
+        await onSelectQuiz(selectedQuizId);
         navigate('/question/1');
     };
 
@@ -70,8 +85,8 @@ const LandingPage = ({ setGlobalName }) => {
                     MCQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-secondary neon-text-glow">ENGINE</span>
                 </h1>
                 <p className="mt-4 text-xl text-slate-400 max-w-[700px] mx-auto font-light leading-relaxed">
-                    Modular evaluation processor for <span className="text-white font-medium">Information Retrieval Techniques</span>.
-                    Initialize your identity to begin.
+                    Modular evaluation processor for <span className="text-white font-medium">Academic Assessment</span>.
+                    Initialize your identity and select your test module.
                 </p>
             </motion.div>
 
@@ -81,9 +96,9 @@ const LandingPage = ({ setGlobalName }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
             >
-                <div className="relative mb-6">
+                <div className="relative mb-4">
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <User className={`w-5 h-5 transition-colors ${error ? 'text-red-500' : 'text-slate-500'}`} />
+                        <User className={`w-5 h-5 transition-colors ${error.name ? 'text-red-500' : 'text-slate-500'}`} />
                     </div>
                     <input
                         type="text"
@@ -91,12 +106,35 @@ const LandingPage = ({ setGlobalName }) => {
                         value={name}
                         onChange={(e) => {
                             setName(e.target.value);
-                            setError(false);
+                            setError(prev => ({ ...prev, name: false }));
                         }}
-                        className={`w-full bg-black/40 border-2 py-4 pl-12 pr-4 rounded-2xl outline-none transition-all placeholder:text-slate-600 focus:bg-black/60 ${error ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
+                        className={`w-full bg-black/40 border-2 py-4 pl-12 pr-4 rounded-2xl outline-none transition-all placeholder:text-slate-600 focus:bg-black/60 ${error.name ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
                             }`}
                     />
-                    {error && <p className="text-red-500 text-xs mt-2 text-left ml-2">Candidate identifier is required.</p>}
+                    {error.name && <p className="text-red-500 text-xs mt-2 text-left ml-2">Candidate identifier is required.</p>}
+                </div>
+
+                <div className="relative mb-8">
+                    <select
+                        value={selectedQuizId}
+                        onChange={(e) => {
+                            setSelectedQuizId(e.target.value);
+                            setError(prev => ({ ...prev, quiz: false }));
+                        }}
+                        className={`w-full bg-black/40 border-2 py-4 px-4 rounded-2xl outline-none transition-all appearance-none cursor-pointer ${error.quiz ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
+                            } ${!selectedQuizId ? 'text-slate-600' : 'text-white'}`}
+                    >
+                        <option value="" disabled>Select Test Module</option>
+                        {quizzes.map((quiz) => (
+                            <option key={quiz.id} value={quiz.id} className="bg-slate-900 text-white">
+                                {quiz.name}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                        <Play className="w-4 h-4 text-slate-500 rotate-90" />
+                    </div>
+                    {error.quiz && <p className="text-red-500 text-xs mt-2 text-left ml-2">Please select a test module.</p>}
                 </div>
 
                 <button

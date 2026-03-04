@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, CheckCircle2, User, Clock } from 'lucide-react';
 
-const MCQPage = ({ questions, userAnswers, onAnswer, isLoading, userName }) => {
+const MCQPage = ({ questions, userAnswers, onAnswer, isLoading, userName, quizName }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const questionIndex = parseInt(id) - 1;
@@ -102,7 +102,7 @@ const MCQPage = ({ questions, userAnswers, onAnswer, isLoading, userName }) => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">MODULE_{id}</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">{quizName || 'GENERAL_MODULE'}</span>
                         <span className="text-[9px] font-bold text-slate-600 bg-white/5 px-2 py-0.5 rounded-full">{questionIndex + 1}/{questions.length}</span>
                     </div>
                 </div>

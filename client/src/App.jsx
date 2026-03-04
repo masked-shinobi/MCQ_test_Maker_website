@@ -9,27 +9,41 @@ import MCQPage from './pages/MCQPage';
 import ResultPage from './pages/ResultPage';
 import DashboardPage from './pages/DashboardPage';
 import StudyMaterialPage from './pages/StudyMaterialPage';
+import QuizManagementPage from './pages/QuizManagementPage';
 
 const AppContent = () => {
+  const [quizzes, setQuizzes] = useState([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState({});
   const [userName, setUserName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchQuizzes = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/questions');
-        setQuestions(response.data);
-        setIsLoading(false);
+        const response = await axios.get('http://localhost:5001/api/quizzes');
+        setQuizzes(response.data);
       } catch (error) {
-        console.error("Error fetching questions:", error);
-        setIsLoading(false);
+        console.error("Error fetching quizzes:", error);
       }
     };
-    fetchQuestions();
+    fetchQuizzes();
   }, []);
+
+  const fetchQuestions = async (quizId) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:5001/api/questions?quiz=${quizId}`);
+      setQuestions(response.data);
+      setSelectedQuiz(quizzes.find(q => q.id === quizId));
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      setIsLoading(false);
+    }
+  };
 
   const handleAnswer = (questionIndex, answer) => {
     setUserAnswers(prev => ({
@@ -51,7 +65,16 @@ const AppContent = () => {
 
       <AnimatePresence mode="wait">
         <Routes>
-          <Route path="/" element={<LandingPage setGlobalName={setUserName} />} />
+          <Route
+            path="/"
+            element={
+              <LandingPage
+                setGlobalName={setUserName}
+                quizzes={quizzes}
+                onSelectQuiz={fetchQuestions}
+              />
+            }
+          />
           <Route
             path="/question/:id"
             element={
@@ -61,6 +84,7 @@ const AppContent = () => {
                 onAnswer={handleAnswer}
                 isLoading={isLoading}
                 userName={userName}
+                quizName={selectedQuiz?.name}
               />
             }
           />
@@ -72,11 +96,13 @@ const AppContent = () => {
                 userAnswers={userAnswers}
                 userName={userName}
                 onRestart={resetTest}
+                quizName={selectedQuiz?.name}
               />
             }
           />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/material" element={<StudyMaterialPage questions={questions} />} />
+          <Route path="/material" element={<StudyMaterialPage quizzes={quizzes} />} />
+          <Route path="/manage" element={<QuizManagementPage />} />
         </Routes>
       </AnimatePresence>
     </div>
