@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCcw, Check, X, Save, AlertCircle, Info } from 'lucide-react';
 import axios from 'axios';
+import { supabase } from '../supabaseClient';
 
 const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) => {
     const [score, setScore] = useState(0);
@@ -67,24 +68,39 @@ const ResultPage = ({ questions, userAnswers, userName, onRestart, quizName }) =
             hasSavedRef.current = true;
             setSyncStatus('loading');
 
-            const payload = {
-                userName: userName || 'Anonymous',
-                score: currentScore,
-                total: questions.length
-            };
+            const saveResults = async () => {
+                try {
+                    // 1. Save to Supabase
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        await supabase.from('results').insert([{
+                            user_id: user.id,
+                            score: currentScore,
+                            total: questions.length
+                        }]);
+                    }
 
-            axios.post('http://localhost:5001/api/results', payload)
-                .then(() => {
+                    // 2. Save to Local Server (Fallback/Log)
+                    const payload = {
+                        userId: user?.id || 'guest',
+                        userName: userName || 'Anonymous',
+                        score: currentScore,
+                        total: questions.length
+                    };
+                    await axios.post('http://localhost:5001/api/results', payload);
+
                     setSyncStatus('success');
-                })
-                .catch(err => {
+                } catch (err) {
                     console.error("Critical: Sync failed", err);
                     setSyncStatus('error');
                     setTimeout(() => {
                         hasSavedRef.current = false;
                         setSyncStatus('idle');
                     }, 3000);
-                });
+                }
+            };
+
+            saveResults();
         }
 
         return () => clearInterval(timer);

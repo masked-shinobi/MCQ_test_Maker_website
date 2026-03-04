@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, ArrowLeft, CheckCircle2, Award } from 'lucide-react';
 import axios from 'axios';
+import { supabase } from '../supabaseClient';
 
 const StudyMaterialPage = ({ quizzes }) => {
     const navigate = useNavigate();
@@ -21,8 +22,28 @@ const StudyMaterialPage = ({ quizzes }) => {
             if (!selectedQuizId) return;
             setIsLoading(true);
             try {
-                const response = await axios.get(`http://localhost:5001/api/questions?quiz=${selectedQuizId}`);
-                setQuestions(response.data);
+                // Check if cloud quiz (UUID)
+                const isCloud = String(selectedQuizId).length === 36 && String(selectedQuizId).includes('-');
+
+                if (isCloud) {
+                    const { data, error } = await supabase
+                        .from('questions')
+                        .select('*')
+                        .eq('quiz_id', selectedQuizId);
+
+                    if (error) throw error;
+                    setQuestions(data.map(q => ({
+                        question: q.question,
+                        optionA: q.option_a,
+                        optionB: q.option_b,
+                        optionC: q.option_c,
+                        optionD: q.option_d,
+                        answer: q.answer
+                    })));
+                } else {
+                    const response = await axios.get(`http://localhost:5001/api/questions?quiz=${selectedQuizId}`);
+                    setQuestions(response.data);
+                }
                 setIsLoading(false);
             } catch (error) {
                 console.error("Error fetching material:", error);
@@ -32,12 +53,10 @@ const StudyMaterialPage = ({ quizzes }) => {
         fetchQuestions();
     }, [selectedQuizId]);
 
-    // Helper to check if the option is the correct answer
-    const isCorrect = (q, key, val) => {
+    const isCorrect = React.useCallback((q, key, val) => {
         const ans = q.answer;
-        // Check if answer matches the shorthand key (A, B, C, D) or the full value
         return ans === key || ans === val;
-    };
+    }, []);
 
     return (
         <motion.div

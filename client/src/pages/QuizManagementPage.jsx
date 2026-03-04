@@ -13,13 +13,17 @@ import {
     X,
     FileText,
     ShieldCheck,
-    AlertCircle
+    AlertCircle,
+    Cloud,
+    RefreshCw
 } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const QuizManagementPage = () => {
     const [quizzes, setQuizzes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [migratingId, setMigratingId] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', filename: '' });
     const [uploadForm, setUploadForm] = useState({ name: '', file: null });
@@ -28,7 +32,8 @@ const QuizManagementPage = () => {
     const fetchQuizzes = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get('http://localhost:5001/api/quizzes');
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await axios.get(`http://localhost:5001/api/quizzes?userId=${session.user.id}`);
             setQuizzes(response.data);
             setIsLoading(false);
         } catch (error) {
@@ -45,9 +50,11 @@ const QuizManagementPage = () => {
         e.preventDefault();
         if (!uploadForm.file) return alert("Select a file");
 
+        const { data: { session } } = await supabase.auth.getSession();
         const formData = new FormData();
-        formData.append('file', uploadForm.file);
+        formData.append('userId', session.user.id);
         formData.append('name', uploadForm.name);
+        formData.append('file', uploadForm.file);
 
         setUploading(true);
         try {
@@ -91,6 +98,55 @@ const QuizManagementPage = () => {
         } catch (error) {
             console.error("Update failed:", error);
             alert("Failed to update quiz metadata.");
+        }
+    };
+
+    const handleMigrateToCloud = async (quiz) => {
+        const confirm = window.confirm(`Migrate "${quiz.name}" to Supabase Cloud? This will convert CSV rows to SQL tables.`);
+        if (!confirm) return;
+
+        setMigratingId(quiz.id);
+        try {
+            // 1. Fetch questions from local server
+            const response = await axios.get(`http://localhost:5001/api/questions?quiz=${quiz.filename}`);
+            const questions = response.data;
+
+            if (questions.length === 0) throw new Error("No questions found in CSV");
+
+            // 2. Insert Quiz metadata into Supabase
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: supabaseQuiz, error: quizError } = await supabase
+                .from('quizzes')
+                .insert([{ name: quiz.name, user_id: user.id }])
+                .select()
+                .single();
+
+            if (quizError) throw quizError;
+
+            // 3. Prepare questions for Supabase
+            const supabaseQuestions = questions.map(q => ({
+                quiz_id: supabaseQuiz.id,
+                question: q.question,
+                option_a: q.optionA,
+                option_b: q.optionB,
+                option_c: q.optionC,
+                option_d: q.optionD,
+                answer: q.answer
+            }));
+
+            // 4. Batch insert questions
+            const { error: batchError } = await supabase
+                .from('questions')
+                .insert(supabaseQuestions);
+
+            if (batchError) throw batchError;
+
+            alert(`Successfully migrated ${questions.length} questions to Supabase!`);
+            setMigratingId(null);
+        } catch (error) {
+            console.error("Migration fatal error:", error);
+            alert("Migration failed: " + (error.message || "Unknown error"));
+            setMigratingId(null);
         }
     };
 
@@ -143,19 +199,36 @@ const QuizManagementPage = () => {
 
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 ml-1">CSV Source</label>
-                                <div className="relative group">
+                                <div className="relative">
                                     <input
+                                        id="csv-upload"
                                         type="file"
                                         accept=".csv"
-                                        onChange={e => setUploadForm({ ...uploadForm, file: e.target.files[0] })}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        name="file"
+                                        onChange={e => {
+                                            const selectedFile = e.target.files[0];
+                                            console.log("File selected:", selectedFile);
+                                            setUploadForm(prev => ({ ...prev, file: selectedFile }));
+                                        }}
+                                        className="sr-only"
                                     />
-                                    <div className="w-full bg-black/40 border border-dashed border-white/10 p-8 rounded-2xl flex flex-col items-center gap-3 group-hover:border-purple-500/30 transition-all">
-                                        <Upload className="w-8 h-8 text-slate-600 group-hover:text-purple-400 transition-colors" />
-                                        <span className="text-xs font-bold text-slate-500">
-                                            {uploadForm.file ? uploadForm.file.name : 'Select .csv file'}
-                                        </span>
-                                    </div>
+                                    <label
+                                        htmlFor="csv-upload"
+                                        className={`w-full border-2 border-dashed p-8 rounded-2xl flex flex-col items-center gap-3 cursor-pointer transition-all ${uploadForm.file
+                                            ? 'bg-purple-500/10 border-purple-500/50'
+                                            : 'bg-black/40 border-white/10 hover:border-purple-500/30'
+                                            }`}
+                                    >
+                                        <Upload className={`w-8 h-8 ${uploadForm.file ? 'text-purple-400' : 'text-slate-600'}`} />
+                                        <div className="text-center">
+                                            <span className={`text-sm font-bold block ${uploadForm.file ? 'text-white' : 'text-slate-500'}`}>
+                                                {uploadForm.file ? uploadForm.file.name : 'Select .csv file'}
+                                            </span>
+                                            {uploadForm.file && (
+                                                <span className="text-[10px] text-purple-400/60 font-black uppercase mt-1 block">Click to change file</span>
+                                            )}
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
 
@@ -239,6 +312,14 @@ const QuizManagementPage = () => {
                                             </div>
 
                                             <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => handleMigrateToCloud(quiz)}
+                                                    disabled={migratingId !== null}
+                                                    title="Migrate to Supabase Cloud"
+                                                    className={`p-3 rounded-xl transition-all ${migratingId === quiz.id ? 'bg-purple-500 text-white animate-spin' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400'}`}
+                                                >
+                                                    {migratingId === quiz.id ? <RefreshCw className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
+                                                </button>
                                                 <button
                                                     onClick={() => startEditing(quiz)}
                                                     className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-slate-500 hover:text-white"

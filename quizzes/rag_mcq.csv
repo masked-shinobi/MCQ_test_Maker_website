@@ -1,0 +1,11 @@
+Question,OptionA,OptionB,OptionC,OptionD,Answer
+"What is the main purpose of Retrieval-Augmented Generation (RAG)?","To replace large language models","To improve generation by retrieving relevant external knowledge","To compress large datasets","To speed up tokenization","B"
+"Which component in a RAG system is responsible for finding relevant documents?","Generator","Retriever","Tokenizer","Decoder","B"
+"What is typically used to represent text in a vector database for RAG?","Hash tables","Embeddings","Binary trees","Index pointers","B"
+"Why are embeddings important in RAG systems?","They convert text into numerical vectors for similarity search","They encrypt documents","They compress large files","They generate answers directly","A"
+"Which database type is commonly used to store embeddings in RAG systems?","Relational database","Vector database","Graph database","Key-value store","B"
+"What is the role of chunking in a RAG pipeline?","To compress model weights","To divide large documents into smaller retrievable segments","To generate tokens faster","To train embeddings","B"
+"Which similarity metric is commonly used to retrieve relevant vectors?","Cosine similarity","Binary search","Breadth-first search","Sorting algorithm","A"
+"What happens after relevant documents are retrieved in a RAG pipeline?","They are discarded","They are passed to the generator model as context","They are stored permanently","They are encrypted","B"
+"What problem does RAG primarily help reduce in language models?","Overfitting","Hallucination","Memory leaks","Gradient explosion","B"
+"Which step comes first in a typical RAG pipeline?","Generation","Retrieval","Embedding creation","Answer ranking","C"

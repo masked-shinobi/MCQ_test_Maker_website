@@ -1,12 +1,26 @@
 [
-    {
-        "id": "ir_mcq.csv",
-        "name": "Information Retrieval MCQ",
-        "filename": "ir_mcq.csv"
-    },
-    {
-        "id": "general_mcq.csv",
-        "name": "General Knowledge MCQ",
-        "filename": "general_mcq.csv"
-    }
+  {
+    "id": "ir_mcq.csv",
+    "name": "Information Retrieval MCQ",
+    "filename": "ir_mcq.csv",
+    "userId": "global"
+  },
+  {
+    "id": "general_mcq.csv",
+    "name": "General Knowledge MCQ",
+    "filename": "general_mcq.csv",
+    "userId": "global"
+  },
+  {
+    "id": "rag_mcq.csv",
+    "name": "RAG",
+    "filename": "rag_mcq.csv",
+    "userId": "global"
+  },
+  {
+    "id": "26d0d1e4-54e5-417f-8091-0c266c7ab782_Automation_AI.csv",
+    "name": "Automation",
+    "filename": "26d0d1e4-54e5-417f-8091-0c266c7ab782_Automation_AI.csv",
+    "userId": "26d0d1e4-54e5-417f-8091-0c266c7ab782"
+  }
 ]
