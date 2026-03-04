@@ -16,6 +16,18 @@ const quizzesDir = path.join(__dirname, '..', 'quizzes');
 const metadataPath = path.join(quizzesDir, 'metadata.json');
 const resultsFilePath = path.join(__dirname, 'results.json');
 
+// --- PRODUCTION READINESS FIX ---
+// Ensure the quizzes directory exists
+if (!fs.existsSync(quizzesDir)) {
+    fs.mkdirSync(quizzesDir, { recursive: true });
+}
+
+// Ensure the results file exists
+if (!fs.existsSync(resultsFilePath)) {
+    fs.writeFileSync(resultsFilePath, JSON.stringify([]));
+}
+// --------------------------------
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -28,10 +40,6 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage });
-
-if (!fs.existsSync(resultsFilePath)) {
-    fs.writeFileSync(resultsFilePath, JSON.stringify([]));
-}
 
 // Utility to read metadata and sync with physical files (without enrichment)
 const readMetadata = () => {
