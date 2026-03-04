@@ -112,7 +112,7 @@ To upload a new quiz, ensure your CSV follows this header format:
 ---
 
 ## 👤 Author
-**Sanjay** - *Engineering Student*  
+**Masked-Shinobi** - *Engineering Student*  
 Information Retrieval Techniques Project
 
 ---
