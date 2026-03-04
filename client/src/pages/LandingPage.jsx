@@ -94,10 +94,10 @@ const LandingPage = ({ setGlobalName, quizzes, onSelectQuiz }) => {
                 <div className="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-[0.3em] uppercase bg-primary/10 text-primary border border-primary/20 rounded-full animate-pulse">
                     Transmission Online
                 </div>
-                <h1 className="text-7xl font-black tracking-tighter md:text-9xl mb-4 leading-none">
+                <h1 className="text-5xl font-black tracking-tighter md:text-9xl mb-4 leading-none">
                     MCQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-secondary neon-text-glow">ENGINE</span>
                 </h1>
-                <p className="mt-4 text-xl text-slate-400 max-w-[700px] mx-auto font-light leading-relaxed">
+                <p className="mt-4 text-lg md:text-xl text-slate-400 max-w-[700px] mx-auto font-light leading-relaxed px-4 md:px-0">
                     Modular evaluation processor for <span className="text-white font-medium">Academic Assessment</span>.
                     Initialize your identity and select your test module.
                 </p>

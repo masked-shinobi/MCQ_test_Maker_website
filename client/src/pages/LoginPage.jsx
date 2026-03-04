@@ -42,25 +42,25 @@ const LoginPage = () => {
                     </p>
                 </div>
 
-                <div className="glass-card p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
+                <div className="glass-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                     <button
                         onClick={handleGoogleLogin}
-                        className="w-full relative group px-6 py-5 bg-white text-black rounded-2xl text-lg font-black transition-all hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-4"
+                        className="w-full relative group px-4 md:px-6 py-4 md:py-5 bg-white text-black rounded-xl md:rounded-2xl text-base md:text-lg font-black transition-all hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 md:gap-4"
                     >
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 md:w-6 md:h-6" alt="Google" />
                         <span>Authorize with Google</span>
                     </button>
 
-                    <div className="mt-8 grid grid-cols-2 gap-4">
-                        <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/5">
-                            <ShieldCheck className="w-5 h-5 text-green-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 text-center">Cloud Security Enforced</span>
+                    <div className="mt-6 md:mt-8 grid grid-cols-2 gap-3 md:gap-4">
+                        <div className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/5">
+                            <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+                            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-slate-500 text-center">Cloud Security Enforced</span>
                         </div>
-                        <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/5">
-                            <Flame className="w-5 h-5 text-orange-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 text-center">Real-time Sync Active</span>
+                        <div className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/5">
+                            <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
+                            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-slate-500 text-center">Real-time Sync Active</span>
                         </div>
                     </div>
                 </div>

@@ -25,32 +25,32 @@ const UserHeader = ({ userMetadata, onLogout }) => {
     <motion.div
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-6 right-6 z-[100] flex items-center gap-4 bg-white/[0.03] backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl shadow-2xl"
+      className="fixed top-4 right-4 md:top-6 md:right-6 z-[100] flex items-center gap-2 md:gap-4 bg-white/[0.03] backdrop-blur-md border border-white/10 px-3 py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl shadow-2xl"
     >
       <div
-        className="flex flex-col items-end cursor-pointer group"
+        className="hidden md:flex flex-col items-end cursor-pointer group"
         onClick={() => navigate('/profile')}
       >
         <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 group-hover:text-primary transition-colors">Authorized_User</span>
         <span className="text-sm font-bold text-white tracking-tight">{userName}</span>
       </div>
       <div
-        className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform overflow-hidden"
+        className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform overflow-hidden"
         onClick={() => navigate('/profile')}
       >
         {avatarUrl ? (
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
-          <UserIcon className="w-5 h-5 text-primary" />
+          <UserIcon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
         )}
       </div>
-      <div className="w-[1px] h-8 bg-white/10 mx-1" />
+      <div className="w-[1px] h-6 md:h-8 bg-white/10 mx-0.5 md:mx-1" />
       <button
         onClick={onLogout}
-        className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group"
+        className="p-1.5 md:p-2 hover:bg-red-500/10 rounded-lg transition-colors group"
         title="Logout"
       >
-        <LogOut className="w-4 h-4 text-slate-500 group-hover:text-red-500 transition-colors" />
+        <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500 group-hover:text-red-500 transition-colors" />
       </button>
     </motion.div>
   );

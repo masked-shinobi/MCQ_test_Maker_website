@@ -226,33 +226,33 @@ const ProfilePage = () => {
                 {/* Grid Section */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     {/* Performance Stats */}
-                    <div className="md:col-span-2 grid grid-cols-2 gap-6">
-                        <div className="p-8 glass-card rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-primary/30 transition-all">
-                            <Target className="w-8 h-8 text-primary mb-4" />
+                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                        <div className="p-6 md:p-8 glass-card rounded-[2rem] md:rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-primary/30 transition-all">
+                            <Target className="w-6 h-6 md:w-8 md:h-8 text-primary mb-4" />
                             <div>
-                                <h3 className="text-5xl font-black mb-1 text-primary group-hover:scale-105 transition-transform origin-left">{stats.accuracy}%</h3>
-                                <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Precision_Raw</p>
+                                <h3 className="text-4xl md:text-5xl font-black mb-1 text-primary group-hover:scale-105 transition-transform origin-left">{stats.accuracy}%</h3>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500">Precision_Raw</p>
                             </div>
                         </div>
-                        <div className="p-8 glass-card rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-secondary/30 transition-all">
-                            <Activity className="w-8 h-8 text-secondary mb-4" />
+                        <div className="p-6 md:p-8 glass-card rounded-[2rem] md:rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-secondary/30 transition-all">
+                            <Activity className="w-6 h-6 md:w-8 md:h-8 text-secondary mb-4" />
                             <div>
-                                <h3 className="text-5xl font-black mb-1 text-secondary group-hover:scale-105 transition-transform origin-left">{stats.totalTests}</h3>
-                                <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Missions_Logged</p>
+                                <h3 className="text-4xl md:text-5xl font-black mb-1 text-secondary group-hover:scale-105 transition-transform origin-left">{stats.totalTests}</h3>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500">Missions_Logged</p>
                             </div>
                         </div>
-                        <div className="p-8 glass-card rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-yellow-500/30 transition-all">
-                            <Award className="w-8 h-8 text-yellow-500 mb-4" />
+                        <div className="p-6 md:p-8 glass-card rounded-[2rem] md:rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-yellow-500/30 transition-all">
+                            <Award className="w-6 h-6 md:w-8 md:h-8 text-yellow-500 mb-4" />
                             <div>
-                                <h3 className="text-5xl font-black mb-1 text-yellow-500 group-hover:scale-105 transition-transform origin-left">{stats.bestScore}%</h3>
-                                <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Peak_Efficiency</p>
+                                <h3 className="text-4xl md:text-5xl font-black mb-1 text-yellow-500 group-hover:scale-105 transition-transform origin-left">{stats.bestScore}%</h3>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500">Peak_Efficiency</p>
                             </div>
                         </div>
-                        <div className="p-8 glass-card rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all">
-                            <Database className="w-8 h-8 text-blue-500 mb-4" />
+                        <div className="p-6 md:p-8 glass-card rounded-[2rem] md:rounded-[2.5rem] border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all">
+                            <Database className="w-6 h-6 md:w-8 md:h-8 text-blue-500 mb-4" />
                             <div>
-                                <h3 className="text-5xl font-black mb-1 text-blue-500 group-hover:scale-105 transition-transform origin-left">{stats.privateModules}</h3>
-                                <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Secure_Datasets</p>
+                                <h3 className="text-4xl md:text-5xl font-black mb-1 text-blue-500 group-hover:scale-105 transition-transform origin-left">{stats.privateModules}</h3>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500">Secure_Datasets</p>
                             </div>
                         </div>
                     </div>

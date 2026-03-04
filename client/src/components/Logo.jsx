@@ -7,12 +7,13 @@ const Logo = () => {
 
     return (
         <motion.div
-            className="fixed top-6 left-8 z-[100] cursor-pointer"
+            className="fixed top-4 left-4 md:top-6 md:left-8 z-[100] cursor-pointer scale-75 md:scale-100 origin-top-left"
             onClick={() => navigate('/')}
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.5 }}
         >
             <div className="relative group">
                 {/* Glow Effect */}
