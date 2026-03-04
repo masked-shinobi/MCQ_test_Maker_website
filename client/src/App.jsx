@@ -14,6 +14,7 @@ import QuizManagementPage from './pages/QuizManagementPage';
 import ProfilePage from './pages/ProfilePage';
 import { supabase } from './supabaseClient';
 import LoginPage from './pages/LoginPage';
+import Logo from './components/Logo';
 
 const UserHeader = ({ userMetadata, onLogout }) => {
   const userName = userMetadata?.full_name || userMetadata?.email || 'Authorized_User';
@@ -172,6 +173,7 @@ const AppContent = () => {
     <div className="relative min-h-screen overflow-x-hidden text-white selection:bg-primary/30">
       <CustomCursor />
       <Background />
+      {session && <Logo />}
 
       {session && <UserHeader userMetadata={session.user.user_metadata} onLogout={handleLogout} />}
 
