@@ -99,15 +99,20 @@ const AppContent = () => {
           source: 'cloud',
           id: q.id,
           name: q.name,
+          filename: q.filename || 'Cloud_Storage', // Ensure filename exists for deduplication if needed, but ID is better
           questionCount: 'Cloud'
         }));
 
         const allQuizzes = [...formattedCloud, ...localQuizzes];
+
+        // Use a map to deduplicate by name, preferring cloud version
         const uniqueQuizzes = Array.from(
           allQuizzes.reduce((map, quiz) => {
-            // Prefer cloud version if both exist, use filename as unique key
-            if (!map.has(quiz.filename) || quiz.source === 'cloud') {
-              map.set(quiz.filename, quiz);
+            const key = quiz.name.trim().toLowerCase();
+            const existing = map.get(key);
+            // If doesn't exist yet, or the new one is cloud and existing is local, set it
+            if (!existing || (quiz.source === 'cloud' && existing.source === 'local')) {
+              map.set(key, quiz);
             }
             return map;
           }, new Map()).values()
@@ -119,7 +124,7 @@ const AppContent = () => {
       }
     };
     fetchQuizzes();
-  }, [session]);
+  }, [session, window.location.pathname]);
 
   const fetchQuestions = async (quizId, count) => {
     setIsLoading(true);
@@ -127,7 +132,8 @@ const AppContent = () => {
       let allQuestions = [];
       if (!quizId) return;
 
-      const isCloud = String(quizId).length === 36 && String(quizId).includes('-');
+      const quiz = quizzes.find(q => q.id === quizId);
+      const isCloud = quiz?.source === 'cloud';
 
       if (isCloud) {
         const { data, error } = await supabase

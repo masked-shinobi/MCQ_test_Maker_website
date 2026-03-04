@@ -37,17 +37,23 @@ const QuizManagementPage = () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
-            // 1. Fetch Local Quizzes
+            // 1. Fetch Local & Cloud Data
             const localResponse = await axios.get(`${API_URL}/api/quizzes?userId=${session.user.id}`);
-            const localQuizzes = localResponse.data.map(q => ({ ...q, source: 'local' }));
 
-            // 2. Fetch Cloud Quizzes
             const { data: cloudQuizzes, error: cloudError } = await supabase
                 .from('quizzes')
                 .select('*')
                 .eq('user_id', session.user.id);
 
             if (cloudError) console.error("Cloud fetch error:", cloudError);
+
+            // 2. Map and Merge with Deduplication
+            const localQuizzes = localResponse.data.map(localQ => {
+                const isMigrated = (cloudQuizzes || []).some(cloudQ =>
+                    cloudQ.name.trim().toLowerCase() === localQ.name.trim().toLowerCase()
+                );
+                return { ...localQ, source: 'local', isMigrated };
+            });
 
             const formattedCloud = (cloudQuizzes || []).map(q => ({
                 id: q.id,
@@ -57,7 +63,21 @@ const QuizManagementPage = () => {
                 isCloud: true
             }));
 
-            setQuizzes([...formattedCloud, ...localQuizzes]);
+            // Deduplicate all quizzes by name, preferring cloud version
+            const allQuizzes = [...formattedCloud, ...localQuizzes];
+            const uniqueQuizzes = Array.from(
+                allQuizzes.reduce((map, quiz) => {
+                    const key = quiz.name.trim().toLowerCase();
+                    const existing = map.get(key);
+                    // Keep cloud version if it exists, otherwise keep what we have
+                    if (!existing || (quiz.source === 'cloud' && existing.source === 'local')) {
+                        map.set(key, quiz);
+                    }
+                    return map;
+                }, new Map()).values()
+            );
+
+            setQuizzes(uniqueQuizzes);
             setIsLoading(false);
         } catch (error) {
             console.error("Error fetching quizzes:", error);
@@ -245,6 +265,7 @@ const QuizManagementPage = () => {
 
             alert(`Successfully migrated ${questions.length} questions to Supabase!`);
             setMigratingId(null);
+            fetchQuizzes();
         } catch (error) {
             console.error("Migration fatal error:", error);
             alert("Migration failed: " + (error.message || "Unknown error"));
@@ -460,8 +481,11 @@ Generate 10 challenging questions. Do not include any intro/outro text, only the
                                                 </div>
                                                 <div>
                                                     <h3 className="text-xl font-black text-white group-hover:text-purple-300 transition-colors">{quiz.name}</h3>
-                                                    <p className="text-xs font-mono text-slate-600 mt-1 uppercase tracking-tighter">Source: {quiz.filename}</p>
-                                                    {quiz.source === 'cloud' && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-purple-500/20">Cloud_Vault</span>}
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <p className="text-xs font-mono text-slate-600 uppercase tracking-tighter">Source: {quiz.filename}</p>
+                                                        {quiz.isMigrated && <span className="text-[8px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-green-500/20">Migrated</span>}
+                                                    </div>
+                                                    {quiz.source === 'cloud' && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-purple-500/20 block w-fit mt-1">Cloud_Vault</span>}
                                                 </div>
                                             </div>
 
@@ -469,11 +493,11 @@ Generate 10 challenging questions. Do not include any intro/outro text, only the
                                                 {quiz.source === 'local' && (
                                                     <button
                                                         onClick={() => handleMigrateToCloud(quiz)}
-                                                        disabled={migratingId !== null}
-                                                        title="Migrate to Supabase Cloud"
-                                                        className={`p-3 rounded-xl transition-all ${migratingId === quiz.id ? 'bg-purple-500 text-white animate-spin' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400'}`}
+                                                        disabled={migratingId !== null || quiz.isMigrated}
+                                                        title={quiz.isMigrated ? "Already in Cloud" : "Migrate to Supabase Cloud"}
+                                                        className={`p-3 rounded-xl transition-all ${migratingId === quiz.id ? 'bg-purple-500 text-white animate-spin' : (quiz.isMigrated ? 'bg-green-500/10 text-green-500/50 cursor-not-allowed' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400')}`}
                                                     >
-                                                        {migratingId === quiz.id ? <RefreshCw className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
+                                                        {migratingId === quiz.id ? <RefreshCw className="w-5 h-5" /> : (quiz.isMigrated ? <Check className="w-5 h-5" /> : <Cloud className="w-5 h-5" />)}
                                                     </button>
                                                 )}
                                                 <button

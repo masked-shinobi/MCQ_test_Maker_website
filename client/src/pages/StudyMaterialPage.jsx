@@ -23,8 +23,8 @@ const StudyMaterialPage = ({ quizzes }) => {
             if (!selectedQuizId) return;
             setIsLoading(true);
             try {
-                // Check if cloud quiz (UUID)
-                const isCloud = String(selectedQuizId).length === 36 && String(selectedQuizId).includes('-');
+                const quiz = quizzes.find(q => q.id === selectedQuizId);
+                const isCloud = quiz?.source === 'cloud';
 
                 if (isCloud) {
                     const { data, error } = await supabase
