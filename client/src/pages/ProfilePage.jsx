@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import axios from 'axios';
+import API_URL from '../config';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -39,23 +40,27 @@ const ProfilePage = () => {
             setNewName(session.user.user_metadata.full_name || '');
             setNewGrade(session.user.user_metadata.grade || 'GRADE_A');
 
-            // Fetch Leaderboard for real ranking
-            const leaderboardRes = await axios.get('http://localhost:5001/api/leaderboard');
-            const leaderboard = leaderboardRes.data;
-            const myStats = leaderboard.find(u => u.userId === session.user.id);
+            // Fetch Leaderboard for real ranking (Primary Cloud Storage)
+            const { data: leaderboard, error: leaderboardError } = await supabase
+                .from('leaderboard')
+                .select('*');
+
+            if (leaderboardError) console.error("Leaderboard fetch failed:", leaderboardError);
+
+            const myStats = leaderboard?.find(u => u.user_id === session.user.id);
 
             if (myStats) {
                 setStats({
-                    totalTests: myStats.totalTests,
-                    avgScore: myStats.avgAccuracy,
-                    bestScore: Math.round(myStats.bestAccuracy * 100),
-                    privateModules: myStats.privateModules,
-                    accuracy: myStats.avgAccuracy,
-                    rank: `#${myStats.rank}`
+                    totalTests: myStats.total_tests,
+                    avgScore: myStats.avg_accuracy,
+                    bestScore: Math.round(myStats.best_accuracy),
+                    privateModules: stats.privateModules, // Keep what we have
+                    accuracy: myStats.avg_accuracy,
+                    rank: `#${leaderboard.findIndex(u => u.user_id === session.user.id) + 1}`
                 });
             } else {
-                // Fallback if no history yet
-                const quizzesRes = await axios.get(`http://localhost:5001/api/quizzes?userId=${session.user.id}`);
+                // ... handle fallback if needed ...
+                const quizzesRes = await axios.get(`${API_URL}/api/quizzes?userId=${session.user.id}`);
                 const localQuizzes = quizzesRes.data.filter(q => q.userId === session.user.id);
                 setStats(prev => ({
                     ...prev,

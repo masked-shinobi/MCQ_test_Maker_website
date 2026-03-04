@@ -270,9 +270,14 @@ app.get('/api/questions', (req, res) => {
 });
 
 app.get('/api/results', (req, res) => {
+    const { userId } = req.query;
     try {
         const data = fs.readFileSync(resultsFilePath, 'utf8');
-        res.json(JSON.parse(data));
+        let results = JSON.parse(data);
+        if (userId) {
+            results = results.filter(r => r.userId === userId);
+        }
+        res.json(results);
     } catch (e) {
         res.json([]);
     }

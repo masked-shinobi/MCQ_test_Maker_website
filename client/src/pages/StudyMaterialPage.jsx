@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, ArrowLeft, CheckCircle2, Award } from 'lucide-react';
 import axios from 'axios';
 import { supabase } from '../supabaseClient';
+import API_URL from '../config';
 
 const StudyMaterialPage = ({ quizzes }) => {
     const navigate = useNavigate();
@@ -41,7 +42,7 @@ const StudyMaterialPage = ({ quizzes }) => {
                         answer: q.answer
                     })));
                 } else {
-                    const response = await axios.get(`http://localhost:5001/api/questions?quiz=${selectedQuizId}`);
+                    const response = await axios.get(`${API_URL}/api/questions?quiz=${selectedQuizId}`);
                     setQuestions(response.data);
                 }
                 setIsLoading(false);

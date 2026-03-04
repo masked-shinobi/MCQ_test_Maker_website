@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config';
+import { supabase } from '../supabaseClient';
 import { LayoutDashboard, ArrowLeft, User, Calendar, Award, AlertTriangle, RefreshCw, Database } from 'lucide-react';
 
 const DashboardPage = () => {
@@ -14,15 +16,48 @@ const DashboardPage = () => {
         setIsLoading(true);
         setError(false);
         try {
-            const response = await axios.get('http://localhost:5001/api/results');
-            // Sort by ID (timestamp) descending to show latest first
-            const sorted = response.data.sort((a, b) => b.id - a.id);
-            setResults(sorted);
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Fetch from Supabase (Primary Cloud Storage) - SECURELY FILTERED BY USER_ID
+            const { data, error: sbError } = await supabase
+                .from('results')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .order('created_at', { ascending: false });
+
+            if (sbError) throw sbError;
+
+            // Map keys if needed to match the existing UI
+            const mappedResults = data.map(r => ({
+                id: r.id,
+                userName: r.user_name,
+                quizName: r.quiz_name,
+                score: r.score,
+                total: r.total,
+                date: r.created_at
+            }));
+
+            setResults(mappedResults);
             setIsLoading(false);
         } catch (error) {
-            console.error("Error fetching results:", error);
-            setError(true);
-            setIsLoading(false);
+            console.error("Error fetching results from cloud:", error);
+
+            // Fallback to local server (Secondary)
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await axios.get(`${API_URL}/api/results?userId=${session?.user?.id || 'guest'}`);
+                // Filter locally just to be absolutely sure
+                const sorted = response.data
+                    .filter(r => r.userId === session?.user?.id)
+                    .sort((a, b) => b.id - a.id);
+                setResults(sorted);
+                setIsLoading(false);
+            } catch (localError) {
+                console.error("Error fetching results from local API:", localError);
+                setError(true);
+                setIsLoading(false);
+            }
         }
     };
 
@@ -140,10 +175,10 @@ const DashboardPage = () => {
                             </div>
 
                             <div className="flex-1 flex justify-end w-full">
-                                <div className={`px-6 py-2.5 rounded-2xl flex items-center gap-3 text-lg font-black border transition-all ${(res.score / res.total) >= 0.7
+                                <div className={`px - 6 py - 2.5 rounded - 2xl flex items - center gap - 3 text - lg font - black border transition - all ${(res.score / res.total) >= 0.7
                                     ? 'bg-green-500/10 border-green-500/20 text-green-400'
                                     : 'bg-red-500/10 border-red-500/20 text-red-500'
-                                    }`}>
+                                    } `}>
                                     <Award className="w-5 h-5" />
                                     <span>{Math.round((res.score / res.total) * 100)}%</span>
                                 </div>

@@ -15,6 +15,7 @@ import ProfilePage from './pages/ProfilePage';
 import { supabase } from './supabaseClient';
 import LoginPage from './pages/LoginPage';
 import Logo from './components/Logo';
+import API_URL from './config';
 
 const UserHeader = ({ userMetadata, onLogout }) => {
   const userName = userMetadata?.full_name || userMetadata?.email || 'Authorized_User';
@@ -83,7 +84,7 @@ const AppContent = () => {
     if (!session) return;
     const fetchQuizzes = async () => {
       try {
-        const localResponse = await axios.get(`http://localhost:5001/api/quizzes?userId=${session.user.id}`);
+        const localResponse = await axios.get(`${API_URL}/api/quizzes?userId=${session.user.id}`);
         const localQuizzes = localResponse.data.map(q => ({ ...q, source: 'local' }));
 
         const { data: cloudQuizzes, error } = await supabase
@@ -133,7 +134,7 @@ const AppContent = () => {
           answer: q.answer
         }));
       } else {
-        const response = await axios.get(`http://localhost:5001/api/questions?quiz=${quizId}`);
+        const response = await axios.get(`${API_URL}/api/questions?quiz=${quizId}`);
         allQuestions = response.data;
       }
 

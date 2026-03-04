@@ -15,9 +15,12 @@ import {
     ShieldCheck,
     AlertCircle,
     Cloud,
-    RefreshCw
+    RefreshCw,
+    Copy,
+    Sparkles
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import API_URL from '../config';
 
 const QuizManagementPage = () => {
     const [quizzes, setQuizzes] = useState([]);
@@ -33,8 +36,28 @@ const QuizManagementPage = () => {
         setIsLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await axios.get(`http://localhost:5001/api/quizzes?userId=${session.user.id}`);
-            setQuizzes(response.data);
+
+            // 1. Fetch Local Quizzes
+            const localResponse = await axios.get(`${API_URL}/api/quizzes?userId=${session.user.id}`);
+            const localQuizzes = localResponse.data.map(q => ({ ...q, source: 'local' }));
+
+            // 2. Fetch Cloud Quizzes
+            const { data: cloudQuizzes, error: cloudError } = await supabase
+                .from('quizzes')
+                .select('*')
+                .eq('user_id', session.user.id);
+
+            if (cloudError) console.error("Cloud fetch error:", cloudError);
+
+            const formattedCloud = (cloudQuizzes || []).map(q => ({
+                id: q.id,
+                name: q.name,
+                filename: 'Cloud_Storage',
+                source: 'cloud',
+                isCloud: true
+            }));
+
+            setQuizzes([...formattedCloud, ...localQuizzes]);
             setIsLoading(false);
         } catch (error) {
             console.error("Error fetching quizzes:", error);
@@ -46,38 +69,109 @@ const QuizManagementPage = () => {
         fetchQuizzes();
     }, []);
 
+    const [uploadTarget, setUploadTarget] = useState('local'); // 'local' or 'cloud'
+
+    const parseCSV = (text) => {
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+        return lines.slice(1).map(line => {
+            // Robust CSV split handling quoted commas
+            const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (!matches) return null;
+            const values = matches.map(v => v.trim().replace(/^"|"$/g, ''));
+
+            const obj = {};
+            headers.forEach((h, i) => {
+                obj[h] = values[i];
+            });
+            return obj;
+        }).filter(Boolean);
+    };
+
     const handleFileUpload = async (e) => {
         e.preventDefault();
         if (!uploadForm.file) return alert("Select a file");
 
         const { data: { session } } = await supabase.auth.getSession();
-        const formData = new FormData();
-        formData.append('userId', session.user.id);
-        formData.append('name', uploadForm.name);
-        formData.append('file', uploadForm.file);
-
         setUploading(true);
+
         try {
-            await axios.post('http://localhost:5001/api/quizzes/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            if (uploadTarget === 'cloud') {
+                // 1. Read and Parse locally
+                const text = await uploadForm.file.text();
+                const questions = parseCSV(text);
+
+                if (questions.length === 0) throw new Error("No data found in CSV");
+
+                // 2. Create Quiz in Supabase
+                const { data: quiz, error: quizError } = await supabase
+                    .from('quizzes')
+                    .insert([{
+                        name: uploadForm.name || uploadForm.file.name.replace('.csv', ''),
+                        user_id: session.user.id
+                    }])
+                    .select()
+                    .single();
+
+                if (quizError) throw quizError;
+
+                // 3. Batch Insert Questions
+                const supabaseQuestions = questions.map(q => ({
+                    quiz_id: quiz.id,
+                    question: q.Question || q.question,
+                    option_a: q.OptionA || q.optionA,
+                    option_b: q.OptionB || q.optionB,
+                    option_c: q.OptionC || q.optionC,
+                    option_d: q.OptionD || q.optionD,
+                    answer: q.Answer || q.answer
+                }));
+
+                const { error: batchError } = await supabase
+                    .from('questions')
+                    .insert(supabaseQuestions);
+
+                if (batchError) throw batchError;
+
+                alert(`Successfully deployed to Cloud Vault with ${questions.length} questions!`);
+            } else {
+                // Traditional Local Upload
+                const formData = new FormData();
+                formData.append('userId', session.user.id);
+                formData.append('name', uploadForm.name);
+                formData.append('file', uploadForm.file);
+
+                await axios.post(`${API_URL}/api/quizzes/upload`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
+
             setUploadForm({ name: '', file: null });
             fetchQuizzes();
             setUploading(false);
         } catch (error) {
-            console.error("Upload failed:", error);
+            console.error("Initialization failed:", error);
             setUploading(false);
-            alert("Upload failed. Ensure the server is running and file is CSV.");
+            alert("Process failed: " + (error.message || "Check file format or server status."));
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Delete this module and all its data?")) return;
+    const handleDelete = async (quiz) => {
+        if (!window.confirm(`Delete "${quiz.name}" and all its data?`)) return;
         try {
-            await axios.delete(`http://localhost:5001/api/quizzes/${id}`);
+            if (quiz.source === 'cloud') {
+                const { error } = await supabase
+                    .from('quizzes')
+                    .delete()
+                    .eq('id', quiz.id);
+                if (error) throw error;
+            } else {
+                await axios.delete(`${API_URL}/api/quizzes/${quiz.id}`);
+            }
             fetchQuizzes();
         } catch (error) {
             console.error("Delete failed:", error);
+            alert("Delete failed: " + error.message);
         }
     };
 
@@ -90,9 +184,17 @@ const QuizManagementPage = () => {
         setEditingId(null);
     };
 
-    const handleSaveEdit = async (id) => {
+    const handleSaveEdit = async (quiz) => {
         try {
-            await axios.patch(`http://localhost:5001/api/quizzes/${id}`, editForm);
+            if (quiz.source === 'cloud') {
+                const { error } = await supabase
+                    .from('quizzes')
+                    .update({ name: editForm.name })
+                    .eq('id', quiz.id);
+                if (error) throw error;
+            } else {
+                await axios.patch(`${API_URL}/api/quizzes/${quiz.id}`, editForm);
+            }
             setEditingId(null);
             fetchQuizzes();
         } catch (error) {
@@ -108,7 +210,7 @@ const QuizManagementPage = () => {
         setMigratingId(quiz.id);
         try {
             // 1. Fetch questions from local server
-            const response = await axios.get(`http://localhost:5001/api/questions?quiz=${quiz.filename}`);
+            const response = await axios.get(`${API_URL}/api/questions?quiz=${quiz.filename}`);
             const questions = response.data;
 
             if (questions.length === 0) throw new Error("No questions found in CSV");
@@ -150,6 +252,16 @@ const QuizManagementPage = () => {
         }
     };
 
+    const copyMasterPrompt = () => {
+        const prompt = `Act as an expert MCQ generator. Create a professional CSV dataset for the topic: "[REPLACE_WITH_YOUR_TOPIC]". 
+The output MUST be a valid CSV file with these exact headers: Question,OptionA,OptionB,OptionC,OptionD,Answer
+The 'Answer' column should contain only the letter (A, B, C, or D).
+Generate 10 challenging questions. Do not include any intro/outro text, only the CSV data.`;
+
+        navigator.clipboard.writeText(prompt);
+        alert("Master Prompt copied! Paste this into ChatGPT or Claude to generate your CSV.");
+    };
+
     return (
         <motion.div
             className="min-h-screen px-4 py-20 max-w-6xl mx-auto"
@@ -176,6 +288,30 @@ const QuizManagementPage = () => {
                 </button>
             </div>
 
+            {/* Master Prompt Section */}
+            <motion.div
+                className="mb-12 p-8 glass-card rounded-[2.5rem] border border-purple-500/10 bg-gradient-to-r from-purple-500/[0.03] to-transparent flex flex-col md:flex-row items-center justify-between gap-6"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+            >
+                <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-white">Generate with AI</h3>
+                        <p className="text-slate-500 text-sm max-w-md">Copy the expert prompt to generate compatible CSV datasets instantly using any LLM.</p>
+                    </div>
+                </div>
+                <button
+                    onClick={copyMasterPrompt}
+                    className="group flex items-center gap-3 px-8 py-4 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-2xl transition-all text-purple-400 font-black uppercase tracking-widest text-xs"
+                >
+                    <Copy className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span>Copy Master_Prompt</span>
+                </button>
+            </motion.div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Upload Section */}
                 <div className="lg:col-span-1">
@@ -183,6 +319,23 @@ const QuizManagementPage = () => {
                         <div className="flex items-center gap-3 mb-8">
                             <Plus className="w-5 h-5 text-purple-400" />
                             <h2 className="text-xl font-bold uppercase tracking-widest text-white/80">Initialize New</h2>
+                        </div>
+
+                        <div className="flex gap-2 p-1 bg-black/40 rounded-2xl mb-8 border border-white/5">
+                            <button
+                                type="button"
+                                onClick={() => setUploadTarget('local')}
+                                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${uploadTarget === 'local' ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                            >
+                                Local_Vault
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setUploadTarget('cloud')}
+                                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${uploadTarget === 'cloud' ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                            >
+                                Cloud_Vault
+                            </button>
                         </div>
 
                         <form onSubmit={handleFileUpload} className="space-y-6">
@@ -294,7 +447,7 @@ const QuizManagementPage = () => {
                                                 <button onClick={cancelEditing} className="px-6 py-2 bg-white/5 rounded-xl font-bold flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                                                     <X className="w-4 h-4" /> Cancel
                                                 </button>
-                                                <button onClick={() => handleSaveEdit(quiz.id)} className="px-6 py-2 bg-purple-500 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20">
+                                                <button onClick={() => handleSaveEdit(quiz)} className="px-6 py-2 bg-purple-500 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20">
                                                     <Check className="w-4 h-4" /> Save Metadata
                                                 </button>
                                             </div>
@@ -308,18 +461,21 @@ const QuizManagementPage = () => {
                                                 <div>
                                                     <h3 className="text-xl font-black text-white group-hover:text-purple-300 transition-colors">{quiz.name}</h3>
                                                     <p className="text-xs font-mono text-slate-600 mt-1 uppercase tracking-tighter">Source: {quiz.filename}</p>
+                                                    {quiz.source === 'cloud' && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-purple-500/20">Cloud_Vault</span>}
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => handleMigrateToCloud(quiz)}
-                                                    disabled={migratingId !== null}
-                                                    title="Migrate to Supabase Cloud"
-                                                    className={`p-3 rounded-xl transition-all ${migratingId === quiz.id ? 'bg-purple-500 text-white animate-spin' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400'}`}
-                                                >
-                                                    {migratingId === quiz.id ? <RefreshCw className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
-                                                </button>
+                                                {quiz.source === 'local' && (
+                                                    <button
+                                                        onClick={() => handleMigrateToCloud(quiz)}
+                                                        disabled={migratingId !== null}
+                                                        title="Migrate to Supabase Cloud"
+                                                        className={`p-3 rounded-xl transition-all ${migratingId === quiz.id ? 'bg-purple-500 text-white animate-spin' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400'}`}
+                                                    >
+                                                        {migratingId === quiz.id ? <RefreshCw className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => startEditing(quiz)}
                                                     className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-slate-500 hover:text-white"
@@ -327,7 +483,7 @@ const QuizManagementPage = () => {
                                                     <Edit3 className="w-5 h-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(quiz.id)}
+                                                    onClick={() => handleDelete(quiz)}
                                                     className="p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all text-red-500/60 hover:text-red-500"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
