@@ -37,29 +37,29 @@ const DashboardPage = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
-                <div className="flex items-center gap-6">
-                    <div className="p-4 bg-primary/20 rounded-[2rem] border border-primary/20 shadow-2xl">
-                        <LayoutDashboard className="w-10 h-10 text-primary" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/20 rounded-2xl border border-primary/20 shadow-xl">
+                        <LayoutDashboard className="w-8 h-8 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-5xl font-black tracking-tight">System <span className="text-primary">Logs</span></h1>
-                        <p className="text-slate-500 font-medium mt-1">Global performance tracking and session analytics.</p>
+                        <h1 className="text-3xl md:text-4xl font-black tracking-tight">System <span className="text-primary">Logs</span></h1>
+                        <p className="text-slate-500 font-medium text-xs mt-1">Global performance tracking and session analytics.</p>
                     </div>
                 </div>
                 <div className="flex gap-4">
                     <button
                         onClick={() => navigate('/manage')}
-                        className="flex items-center gap-3 px-8 py-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-2xl transition-all border border-purple-500/20 font-bold group"
+                        className="flex items-center gap-2 px-6 py-3 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-xl transition-all border border-purple-500/20 font-bold text-sm group"
                     >
-                        <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <Database className="w-4 h-4 group-hover:scale-110 transition-transform" />
                         <span>Manage Modules</span>
                     </button>
                     <button
                         onClick={() => navigate('/')}
-                        className="flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 font-bold"
+                        className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 font-bold text-sm group"
                     >
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                         <span>Return Core</span>
                     </button>
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, BookOpen, LayoutDashboard, User } from 'lucide-react';
@@ -6,12 +6,19 @@ import { Play, BookOpen, LayoutDashboard, User } from 'lucide-react';
 const LandingPage = ({ setGlobalName, quizzes, onSelectQuiz }) => {
     const [name, setName] = useState('');
     const [selectedQuizId, setSelectedQuizId] = useState('');
-    const [error, setError] = useState({ name: false, quiz: false });
+    const [questionCount, setQuestionCount] = useState('');
+    const [error, setError] = useState({ name: false, quiz: false, count: false });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        console.log("Modules loaded in LandingPage:", quizzes);
+    }, [quizzes]);
+
+    const selectedQuizData = quizzes.find(q => q.id === selectedQuizId);
 
     const handleStart = async () => {
         let hasError = false;
-        const newError = { name: false, quiz: false };
+        const newError = { name: false, quiz: false, count: false };
 
         if (!name.trim()) {
             newError.name = true;
@@ -22,13 +29,19 @@ const LandingPage = ({ setGlobalName, quizzes, onSelectQuiz }) => {
             hasError = true;
         }
 
+        const countVal = parseInt(questionCount);
+        if (!questionCount || isNaN(countVal) || countVal <= 0 || (selectedQuizData && countVal > selectedQuizData.questionCount)) {
+            newError.count = true;
+            hasError = true;
+        }
+
         if (hasError) {
             setError(newError);
             return;
         }
 
         setGlobalName(name);
-        await onSelectQuiz(selectedQuizId);
+        await onSelectQuiz(selectedQuizId, countVal);
         navigate('/question/1');
     };
 
@@ -111,31 +124,61 @@ const LandingPage = ({ setGlobalName, quizzes, onSelectQuiz }) => {
                         className={`w-full bg-black/40 border-2 py-4 pl-12 pr-4 rounded-2xl outline-none transition-all placeholder:text-slate-600 focus:bg-black/60 ${error.name ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
                             }`}
                     />
-                    {error.name && <p className="text-red-500 text-xs mt-2 text-left ml-2">Candidate identifier is required.</p>}
+                    {error.name && <p className="text-red-500 text-xs mt-2 text-left ml-2 font-bold tracking-tight">Candidate identifier is required.</p>}
                 </div>
 
-                <div className="relative mb-8">
+                <div className="relative mb-4">
                     <select
                         value={selectedQuizId}
                         onChange={(e) => {
                             setSelectedQuizId(e.target.value);
                             setError(prev => ({ ...prev, quiz: false }));
+                            // Reset question count when quiz changes
+                            setQuestionCount('');
                         }}
                         className={`w-full bg-black/40 border-2 py-4 px-4 rounded-2xl outline-none transition-all appearance-none cursor-pointer ${error.quiz ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
-                            } ${!selectedQuizId ? 'text-slate-600' : 'text-white'}`}
+                            } ${!selectedQuizId ? 'text-slate-600' : 'text-white font-bold'}`}
                     >
                         <option value="" disabled>Select Test Module</option>
                         {quizzes.map((quiz) => (
                             <option key={quiz.id} value={quiz.id} className="bg-slate-900 text-white">
-                                {quiz.name}
+                                {quiz.name} ({quiz.questionCount ?? '...'} Questions)
                             </option>
                         ))}
                     </select>
                     <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                         <Play className="w-4 h-4 text-slate-500 rotate-90" />
                     </div>
-                    {error.quiz && <p className="text-red-500 text-xs mt-2 text-left ml-2">Please select a test module.</p>}
+                    {error.quiz && <p className="text-red-500 text-xs mt-2 text-left ml-2 font-bold tracking-tight">Please select a test module.</p>}
                 </div>
+
+                {selectedQuizId && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="relative mb-8"
+                    >
+                        <div className="flex justify-between items-center mb-2 px-1">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                Question Count (Max: {selectedQuizData?.questionCount ?? 'Scanning...'})
+                            </label>
+                        </div>
+                        <input
+                            type="number"
+                            placeholder={`Enter no. of questions (1-${selectedQuizData?.questionCount || 'max'})`}
+                            value={questionCount}
+                            onChange={(e) => {
+                                setQuestionCount(e.target.value);
+                                setError(prev => ({ ...prev, count: false }));
+                            }}
+                            className={`w-full bg-black/40 border-2 py-4 px-6 rounded-2xl outline-none transition-all placeholder:text-slate-600 focus:bg-black/60 font-bold ${error.count ? 'border-red-500/50 shake' : 'border-white/5 focus:border-primary/50'
+                                }`}
+                            min="1"
+                            max={selectedQuizData?.questionCount || 100}
+                        />
+                        {error.count && <p className="text-red-500 text-xs mt-2 text-left ml-2 font-bold tracking-tight">Enter valid count between 1 and {selectedQuizData?.questionCount || 'max'}.</p>}
+                    </motion.div>
+                )}
 
                 <button
                     onClick={handleStart}

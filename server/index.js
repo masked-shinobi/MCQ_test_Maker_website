@@ -60,13 +60,34 @@ const getMetadata = () => {
         });
 
         // Cleanup: Remove metadata entries if physical file is gone
-        const existingMetadata = metadata.filter(m => csvFiles.includes(m.filename));
-        if (existingMetadata.length !== metadata.length) {
-            metadata = existingMetadata;
+        const syncedMetadata = metadata.filter(m => csvFiles.includes(m.filename));
+        if (syncedMetadata.length !== metadata.length) {
+            metadata = syncedMetadata;
             changed = true;
         }
 
+        // Add question count to metadata items (don't save this to JSON to keep it fresh)
+        const enrichedMetadata = metadata.map(quiz => {
+            const filePath = path.join(quizzesDir, quiz.filename);
+            let count = 0;
+            if (fs.existsSync(filePath)) {
+                try {
+                    const content = fs.readFileSync(filePath, 'utf8').trim();
+                    if (content) {
+                        // More robust line counting for different line endings
+                        const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+                        count = lines.length > 0 ? lines.length - 1 : 0;
+                    }
+                } catch (err) {
+                    console.error(`Error reading ${quiz.filename}:`, err);
+                }
+            }
+            return { ...quiz, questionCount: count };
+        });
+
         if (changed) saveMetadata(metadata);
+        console.log(`[Server] Serving ${enrichedMetadata.length} quizzes with counts.`);
+        return enrichedMetadata;
     }
 
     return metadata;
@@ -79,7 +100,8 @@ const saveMetadata = (data) => {
 
 // Get list of available quizzes (from metadata)
 app.get('/api/quizzes', (req, res) => {
-    res.json(getMetadata());
+    const data = getMetadata();
+    res.json(data);
 });
 
 // Upload a new quiz
@@ -208,3 +230,6 @@ app.post('/api/results', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+// Keep-alive to prevent unexpected exit in some environments
+setInterval(() => { }, 1000000);

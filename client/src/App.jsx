@@ -32,11 +32,20 @@ const AppContent = () => {
     fetchQuizzes();
   }, []);
 
-  const fetchQuestions = async (quizId) => {
+  const fetchQuestions = async (quizId, count) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`http://localhost:5001/api/questions?quiz=${quizId}`);
-      setQuestions(response.data);
+      let allQuestions = response.data;
+
+      // Shuffle the questions
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+
+      // Slice based on requested count (default to all if not specified or 0)
+      const limit = count && count > 0 ? Math.min(count, shuffled.length) : shuffled.length;
+      const selectedQuestions = shuffled.slice(0, limit);
+
+      setQuestions(selectedQuestions);
       setSelectedQuiz(quizzes.find(q => q.id === quizId));
       setIsLoading(false);
     } catch (error) {

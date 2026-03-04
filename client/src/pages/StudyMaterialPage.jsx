@@ -47,21 +47,21 @@ const StudyMaterialPage = ({ quizzes }) => {
             exit={{ opacity: 0 }}
         >
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16 px-4">
-                <div className="flex items-center gap-6">
-                    <div className="p-4 bg-secondary/20 rounded-[2rem] border border-secondary/20 shadow-2xl relative overflow-hidden group">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-secondary/20 rounded-2xl border border-secondary/20 shadow-xl relative overflow-hidden group">
                         <div className="absolute inset-0 bg-secondary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                        <BookOpen className="w-10 h-10 text-secondary relative z-10" />
+                        <BookOpen className="w-8 h-8 text-secondary relative z-10" />
                     </div>
                     <div>
-                        <h1 className="text-5xl font-black tracking-tight">Material <span className="text-secondary">Library</span></h1>
-                        <p className="text-slate-500 font-medium mt-1">Foundational data for evaluation mastery.</p>
+                        <h1 className="text-3xl md:text-4xl font-black tracking-tight">Material <span className="text-secondary">Library</span></h1>
+                        <p className="text-slate-500 font-medium text-xs mt-1">Foundational data for evaluation mastery.</p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 font-bold group"
+                    className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 font-bold text-sm group"
                 >
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     <span>Return Core</span>
                 </button>
             </div>
