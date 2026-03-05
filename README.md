@@ -4,6 +4,8 @@
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+<img width="1889" height="954" alt="Screenshot 2026-03-04 222419" src="https://github.com/user-attachments/assets/5fd0e876-9ce3-4316-ab1e-db2707510589" />
+
 
 A premium, full-stack MCQ application designed for Information Retrieval Techniques. Features a sleek **Glassmorphic UI**, real-time authentication, and a dynamic quiz management system.
 
